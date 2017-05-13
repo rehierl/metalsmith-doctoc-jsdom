@@ -1,0 +1,29 @@
+{
+  "version": "0.0.1",
+  "name": "metalsmith-doctoc-jsdom",
+  "description": "A metalsmith-doctoc plugin based on jsdom.",
+  "homepage": "https://github.com/rehierl/metalsmith-doctoc-jsdom",
+  "keywords": [
+    "metalsmith",
+    "frontmatter",
+    "doctoc",
+    "table-of-contents",
+    "toc"
+  ],
+  "author": "Reinhardt Hierl",
+  "license": "MIT",
+  "main": "src/index.js",
+  "bugs": {
+    "url": "https://github.com/rehierl/metalsmith-doctoc-jsdom/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/rehierl/metalsmith-doctoc-jsdom.git"
+  },
+  "peerDependencies": {
+    "metalsmith": ">=1.0.0",
+    "metalsmith-doctoc": ">=0.0.1"
+  },
+  "dependencies": {
+  }
+}
