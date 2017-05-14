@@ -25,5 +25,8 @@
     "metalsmith-doctoc": ">=0.0.1"
   },
   "dependencies": {
+    "is": ">=3.2.1",
+    "slug": ">=0.9.1",
+    "jsdom": ">=10.0.0"
   }
 }
