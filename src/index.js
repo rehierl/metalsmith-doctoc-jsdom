@@ -29,13 +29,23 @@ function Plugin(userOptions) {
   
   //- used when processing a file
   this.optionsFile = this.options;
+  
+  //- MDT's plugins API
+  this.api = undefined;
 }
+
+//========//========//========//========//========//========//========//========
+
+//- public, optional
+Plugin.prototype.setPluginsApi = function(api) {
+  this.api = api;
+};
 
 //========//========//========//========//========//========//========//========
 
 //- public, not required
 //- warning if needed and missing
-Plugin.prototype.applyDefaultOptions = function(options) {
+Plugin.prototype.setDefaultOptions = function(options) {
   const clone = this.options.clone();
   clone.combine(options);
   this.optionsDefault = clone;
@@ -45,7 +55,7 @@ Plugin.prototype.applyDefaultOptions = function(options) {
 
 //- public, not required
 //- warning if needed and missing
-Plugin.prototype.applyFileOptions = function(filename, options) {
+Plugin.prototype.setFileOptions = function(filename, options) {
   const clone = this.optionsDefault.clone();
   clone.combine(options);
   clone.filename = filename;
@@ -72,49 +82,28 @@ Plugin.prototype.run = function(filename, file) {
     this.optionsFile = this.optionsDefault;
   }
   
-  let headings = undefined;
-  
-  {//### read and modify the file contents
-    let contents = file.contents;
-    let fromBuffer = undefined;
-
-    if(is.string(contents)) {
-      fromBuffer = false;
-    } else {
-      //- assume that contents is a Buffer
-      contents = contents.toString('utf8');
-      fromBuffer = true;
-    }
-
-    //- result.contents might have changed!
-    const result = read(contents, options);
-
-    if(result.newIdsCount > 0) {
-      contents = result.contents;
-      
-      if(fromBuffer === true) {
-        //- if you started with a buffer,
-        //  then you should finish with one
-        contents = new Buffer(result.contents);
-      }
-      
-      file.contents = contents;
-    }
-
-    headings = result.headings;
-  }
-  
-  return {
-    result: headings,
-    isHeadingsList: true
-  };
+  return this.api.readFileContents(readContents, {
+    api: this.api,
+    filename: filename,
+    file: file,
+    options: options
+  });
 };
 
 //========//========//========//========//========//========//========//========
 
-//- (contents, options) => { contents, newIdsCount, [headings] }
-//- contents will have changed iif (newIdsCount > 0)
-function read(contents, options) {
+function readContents(context) {
+  const api = context.api;
+  const contents = context.contents;
+  const options = context.options;
+  const selector = options.hSelector;
+  
+  const idgen = api.getIdGenerator({
+    slugFunc: options.slugFunc,
+    idPrefix: options.idPrefix,
+    idLengthLimit: options.idLengthLimit
+  });
+  
   const dom = new JSDOM(contents, {
     //- must be enabled to use dom.nodeLocation()
     includeNodeLocations: true });
@@ -126,20 +115,28 @@ function read(contents, options) {
   
   //- querySelectorAll() will return a NodeList
   //- in this case a list of HTMLHeadingElement's
-  const list = doc.querySelectorAll(options.hSelector);
+  const elements = doc.querySelectorAll(selector);
   
   const headings = [];
   let newIdsCount = 0;
   
-  for(let ix=0, ic=list.length; ix<ic; ix++) {
-    const header = list[ix];
+  for(let ix=0, ic=elements.length; ix<ic; ix++) {
+    const header = elements[ix];
     const title = header.textContent;
     let id = undefined;
     
     if(header.hasAttribute("id")) {
+      //- assume that this id value is unique
       id = header.getAttribute("id");
     } else {
-      id = options.slugFunc(title);
+      id = idgen.nextId(title);
+      
+      if(options.makeIdsUnique === true) {
+        while(doc.querySelector("#" + id) !== null) {
+          id = idgen.nextId();
+        }
+      }
+      
       header.setAttribute("id", id);
       newIdsCount++;
     }
@@ -155,17 +152,15 @@ function read(contents, options) {
     });
   }//- for
   
-  if(newIdsCount > 0) {
+  if(newIdsCount <= 0) {
+    delete context.contents;
+  } else {
     if(isTagSoup === true) {
-      contents = doc.body.innerHTML;
+      context.contents = doc.body.innerHTML;
     } else {
-      contents = dom.serialize();
+      context.contents = dom.serialize();
     }
   }
   
-  return {
-    contents: contents,
-    newIdsCount: newIdsCount,
-    headings: headings
-  };
+  return api.createTreeFromHeadings(headings);
 }

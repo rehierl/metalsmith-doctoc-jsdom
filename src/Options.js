@@ -61,6 +61,22 @@ function Options() {
   //  with $idPrefix; i.e. '<h1 id="$idPrefix$id">$title</h1>'.
   //- set to "" if no prefix is needed.
   this.idPrefix = "doctoc-";
+  
+  //- this will limit (idPrefix + slugFunc(title)) to the
+  //  specified number of characters.
+  //- id values might exceed that limit by some unique
+  //  number suffix.
+  this.idLengthLimit = 256;
+
+  //- if set to true, this will do check that a generated id is
+  //  not already in use. so a test will be done for each
+  //  id generated!
+  //- if such a test determines that a generated value is not
+  //  unique, append a counter (=1) to the id's value,
+  //  i.e. '$newId=$id-$counter'. redo the test with the new
+  //  value. if $newId still isn't unique, increment the
+  //  counter and repeat the procedure.
+  this.makeIdsUnique = false;
 }
 
 //========//========//========//========//========//========//========//========
@@ -233,6 +249,16 @@ function validateOptions(options) {
       ));
     }
   }
+  
+  key = "slugFunc";
+  if(options.hasOwnProperty(key)) {
+    value = options[key];
+    if(!is.fn(value)) {
+      throw new Error(util.format(
+        "options.%s: is not a function", key
+      ));
+    }
+  }
 
   key = "idPrefix";
   if(options.hasOwnProperty(key)) {
@@ -245,12 +271,13 @@ function validateOptions(options) {
     }
   }
   
-  key = "slugFunc";
+  key = "idLengthLimit";
   if(options.hasOwnProperty(key)) {
     value = options[key];
-    if(!is.fn(value)) {
+    if(!is.integer(value) || is.infinite(value) || (value <= 0)) {
       throw new Error(util.format(
-        "options.%s: is not a function", key
+        "options.%s: [%s] is not a valid integer value",
+        key, value
       ));
     }
   }

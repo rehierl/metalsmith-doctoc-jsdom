@@ -70,7 +70,8 @@ msi
         slugFunc: (title) => {
           return "slugged-" + slug(title);
         },
-        idPrefix: ""
+        idPrefix: "",
+        makeIdsUnique: true
       }
     }
   },

@@ -11,6 +11,16 @@ plugin will use jsdom
 to read the heading tags from any HTML content. It will process fully specified
 HTML documents, or a mere tag soup (e.g. no html, head or body tags).
 
+## TODO
+
+- add support for jsdom-specific options?
+
+## Installation
+
+```js
+npm install metalsmith-doctoc-jsdom
+```
+
 ## Options object
 
 This plugin will accept the following option properties:
@@ -66,7 +76,23 @@ Options {
   //  prefixed with $idPrefix;
   //  i.e. '<h1 id="$idPrefix$id">$title</h1>'.
   //- set to "" if you don't want to use a prefix.
-  idPrefix: "doctoc-"
+  idPrefix: "doctoc-",
+
+  //- this will limit id = (idPrefix + slugFunc(title))
+  //  to the specified number of characters.
+  //- id values might exceed that limit by some unique
+  //  number suffix.
+  idLengthLimit: 256
+
+  //- if set to true, this will do check that a generated id is
+  //  not already in use. so a test will be done for each
+  //  id generated!
+  //- if such a test determines that a generated value is not
+  //  unique, append a counter (=1) to the id's value,
+  //  i.e. '$newId=$id-$counter'. redo the test with the new
+  //  value. if $newId still isn't unique, increment the
+  //  counter and repeat the procedure.
+  makeIdsUnique: false
 }
 ```
 

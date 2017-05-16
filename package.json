@@ -22,7 +22,7 @@
   },
   "peerDependencies": {
     "metalsmith": ">=1.0.0",
-    "metalsmith-doctoc": ">=0.0.1"
+    "metalsmith-doctoc": ">=0.2.0"
   },
   "dependencies": {
     "is": ">=3.2.1",
