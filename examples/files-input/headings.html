@@ -1,21 +1,29 @@
 ---
-doctoc: true
+doctoc:
+  config: jsdom
+  options:
+    hSelector: 'h1, h2, h3, h4, h5, h6'
+    hContext: '#context'
 ---
-<html>
-  <body>
-    <h1 id='oldId'>1. heading</h1>
-    <p>1. content</p>
-    <h2>heading</h2>
-    <p>1.1. content</p>
-    <h3>heading</h3>
-    <p>1.1.1. content</p>
-    <h4>1.1.1.1. heading</h4>
-    <p>1.1.1.1. content</p>
-    <h3>1.1.2. heading</h3>
-    <p>1.1.2. content</p>
-    <h5>1.1.2.1.1. heading</h5>
-    <p>1.1.2.1.1. content</p>
-    <h6>1.1.2.1.1.1. heading</h6>
-    <p>1.1.2.1.1.1. content</p>
-  </body>
-</html>
+<h1 ID='doc-id1'>1. heading</h1>
+<p>1. content</p>
+
+<div id='context'>
+  <H2>1.1. heading</H2>
+  <p>1.1. content</p>
+  
+  <h3>heading</h3>
+  <p>1.1.1. content</p>
+  
+  <h4 id='doc-id2'>heading</h4>
+  <p>1.1.1.1. content</p>
+  
+  <h3>heading</h3>
+  <p>1.1.2. content</p>
+  
+  <h5>1.1.2.1.1. heading</h5>
+  <p>1.1.2.1.1. content</p>
+  
+  <H6>1.1.2.1.1.1. heading</H6>
+  <p>1.1.2.1.1.1. content</p>
+</div>

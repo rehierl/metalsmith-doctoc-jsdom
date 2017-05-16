@@ -1,5 +1,5 @@
 
-"use strict;"
+"use strict";
 
 const is = require("is");
 const util = require("util");
@@ -96,7 +96,6 @@ function readContents(context) {
   const api = context.api;
   const contents = context.contents;
   const options = context.options;
-  const selector = options.hSelector;
   
   const idgen = api.getIdGenerator({
     slugFunc: options.slugFunc,
@@ -104,63 +103,86 @@ function readContents(context) {
     idLengthLimit: options.idLengthLimit
   });
   
-  const dom = new JSDOM(contents, {
+  let jsdomSerialization = options.jsdomSerialization;
+  
+  if(jsdomSerialization === "auto") {
     //- must be enabled to use dom.nodeLocation()
-    includeNodeLocations: true });
+    options.jsdomOptions.includeNodeLocations = true;
+  }
+  
+  const dom = new JSDOM(contents, options.jsdomOptions);
   const doc = dom.window.document;
   
-  //- determine if contents is a fully specified html document
-  //  with <html>, <head> and <body> tags, or just some tag soup.
-  const isTagSoup = (dom.nodeLocation(doc.body) === null);
+  if(jsdomSerialization === "auto") {
+    //- determine if contents is a fully specified html document
+    //  with <html>, <head> and <body> tags, or just some tag soup.
+    //- this is needed to determine how to extract the contents
+    let isTagSoup = (dom.nodeLocation(doc.body) === null);
+    jsdomSerialization = isTagSoup ? "body" : "complete";
+  }
   
-  //- querySelectorAll() will return a NodeList
-  //- in this case a list of HTMLHeadingElement's
-  const elements = doc.querySelectorAll(selector);
+  let parents = [ doc ];
+  
+  if(options.hContext !== "") {
+    //- querySelectorAll() will return a NodeList
+    parents = doc.querySelectorAll(options.hContext);
+  }
   
   const headings = [];
   let newIdsCount = 0;
   
-  for(let ix=0, ic=elements.length; ix<ic; ix++) {
-    const header = elements[ix];
-    const title = header.textContent;
-    let id = undefined;
+  for(let ix=0, ic=parents.length; ix<ic; ix++) {
+    const parent = parents[ix];
     
-    if(header.hasAttribute("id")) {
-      //- assume that this id value is unique
-      id = header.getAttribute("id");
-    } else {
-      id = idgen.nextId(title);
-      
-      if(options.makeIdsUnique === true) {
-        while(doc.querySelector("#" + id) !== null) {
-          id = idgen.nextId();
+    //- these will be HTMLHeadingElement objects
+    const elements = parent.querySelectorAll(options.hSelector);
+     
+    for(let jx=0, jc=elements.length; jx<jc; jx++) {
+      const header = elements[jx];
+      const title = header.textContent;
+      let id = undefined;
+
+      if(header.hasAttribute("id")) {
+        //- assume that this id value is unique
+        id = header.getAttribute("id");
+      } else {
+        id = idgen.nextId(title);
+
+        if(options.makeIdsUnique === true) {
+          while(doc.querySelector("#" + id) !== null) {
+            id = idgen.nextId();
+          }
         }
+
+        header.setAttribute("id", id);
+        newIdsCount++;
       }
-      
-      header.setAttribute("id", id);
-      newIdsCount++;
-    }
-    
-    const tag = header.tagName;
-    const level = Number.parseInt(tag.substring(1));
-    
-    headings.push({
-      tag: tag,
-      level: level,
-      title: title,
-      id: id
-    });
-  }//- for
+
+      const tag = header.tagName;
+      const level = Number.parseInt(tag.substring(1));
+
+      headings.push({
+        tag: tag,
+        level: level,
+        title: title,
+        id: id
+      });
+    }//- for(jx)
+  }//- for(ix)
   
-  if(newIdsCount <= 0) {
+  if((options.alwaysUpdate !== true)
+  && (newIdsCount <= 0)) {
     delete context.contents;
+  } else if(jsdomSerialization === "body") {
+    context.contents = doc.body.innerHTML;
+  } else if(jsdomSerialization === "complete") {
+    context.contents = dom.serialize();
   } else {
-    if(isTagSoup === true) {
-      context.contents = doc.body.innerHTML;
-    } else {
-      context.contents = dom.serialize();
-    }
+    throw new Error("internal error");
   }
+  
+  //- make sure everything is shut down
+  dom.window.close();
   
   return api.createTreeFromHeadings(headings);
 }
