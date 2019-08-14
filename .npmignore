@@ -1,13 +1,7 @@
 
 #- files/folders ignored by npm
 #- https://docs.npmjs.com/misc/developers#keeping-files-out-of-your-package
-#- auto-ignores "./node_modules/", "./.git/"
-
-#- ignore NetBeans' project folder
-nbproject
-
-#- ignore github's template folder
-.github
+#- auto-ignores the "node_modules", ".git" folders
 
 #- ignore the plugin's example folder
 #- explore it on the plugin's github repository

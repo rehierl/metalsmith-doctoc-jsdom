@@ -44,7 +44,7 @@ Options {
     //- negatively affects the performance
     includeNodeLocations: false
   },
-  
+
   //- used to select which method to use in order to extract
   //  modified content from jsdom; this will only happen if
   //  id values had to be generated.
@@ -64,12 +64,12 @@ Options {
   //  within the source content. if that tag was found, the
   //  'complete' method will be selected; 'body' otherwise.
   jsdomSerialization: 'complete',
-  
+
   //- $range = 'h$min-$max'
   //- with $min and $max in [1,6] and ($min <= $max)
   //- $min will replace hMin and $max will replace hMax
   hRange: "h1-6",
-  
+
   //- an integer value in [1,6]
   //- if hMin=X, then this plugin will
   //  ignore any heading tag <hN> if (N < X)
@@ -93,14 +93,14 @@ Options {
   //- if hMin or hMax are given, they will override hSelector
   //- hSelector is what will be used to find the heading tags
   hSelector: 'h1, h2, h3, h4, h5, h6',
-  
+
   //- use this value to specify a cheerio context in which to
   //  look for heading tags.
   //- e.g. use '' to search the whole document
   //- e.g. use '#id' to only search the element marked with the
   //  specified id value.
   hContext: '',
-  
+
   //- string function(string)
   //- this function will be used to calculate a missing id:
   //  assuming "<h1>$title</h1>" was found, an id will be

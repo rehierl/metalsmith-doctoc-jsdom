@@ -17,19 +17,19 @@ function Plugin(userOptions) {
   if(!(this instanceof Plugin)) {
     return new Plugin(userOptions);
   }
-  
+
   //- used as default/base options when
   //  applying plugin-specific settings
   this.options = new Options();
   this.options.combine(userOptions);
-  
+
   //- used as default/base options when
   //  applying file-specific settings
   this.optionsDefault = this.options;
-  
+
   //- used when processing a file
   this.optionsFile = this.options;
-  
+
   //- MDT's plugins API
   this.api = undefined;
 }
@@ -67,21 +67,21 @@ Plugin.prototype.setFileOptions = function(filename, options) {
 //- public, required
 Plugin.prototype.run = function(filename, file) {
   let options = undefined;
-  
+
   {//## choose which options to use
     options = this.optionsFile;
-    
+
     if(!options.hasOwnProperty("filename")) {
       options = this.optionsDefault;
     } else if(options.filename !== filename) {
       options = this.optionsDefault;
     }
-    
+
     //- file options should only be used for a single file
     //- reset file options to the default options
     this.optionsFile = this.optionsDefault;
   }
-  
+
   return this.api.readFileContents(readContents, {
     api: this.api,
     filename: filename,
@@ -96,23 +96,23 @@ function readContents(context) {
   const api = context.api;
   const contents = context.contents;
   const options = context.options;
-  
+
   const idgen = api.getIdGenerator({
     slugFunc: options.slugFunc,
     idPrefix: options.idPrefix,
     idLengthLimit: options.idLengthLimit
   });
-  
+
   let jsdomSerialization = options.jsdomSerialization;
-  
+
   if(jsdomSerialization === "auto") {
     //- must be enabled to use dom.nodeLocation()
     options.jsdomOptions.includeNodeLocations = true;
   }
-  
+
   const dom = new JSDOM(contents, options.jsdomOptions);
   const doc = dom.window.document;
-  
+
   if(jsdomSerialization === "auto") {
     //- determine if contents is a fully specified html document
     //  with <html>, <head> and <body> tags, or just some tag soup.
@@ -120,23 +120,23 @@ function readContents(context) {
     let isTagSoup = (dom.nodeLocation(doc.body) === null);
     jsdomSerialization = isTagSoup ? "body" : "complete";
   }
-  
+
   let parents = [ doc ];
-  
+
   if(options.hContext !== "") {
     //- querySelectorAll() will return a NodeList
     parents = doc.querySelectorAll(options.hContext);
   }
-  
+
   const headings = [];
   let newIdsCount = 0;
-  
+
   for(let ix=0, ic=parents.length; ix<ic; ix++) {
     const parent = parents[ix];
-    
+
     //- these will be HTMLHeadingElement objects
     const elements = parent.querySelectorAll(options.hSelector);
-     
+
     for(let jx=0, jc=elements.length; jx<jc; jx++) {
       const header = elements[jx];
       const title = header.textContent;
@@ -169,7 +169,7 @@ function readContents(context) {
       });
     }//- for(jx)
   }//- for(ix)
-  
+
   if((options.alwaysUpdate !== true)
   && (newIdsCount <= 0)) {
     delete context.contents;
@@ -180,9 +180,9 @@ function readContents(context) {
   } else {
     throw new Error("internal error");
   }
-  
+
   //- make sure everything is shut down
   dom.window.close();
-  
+
   return api.createTreeFromHeadings(headings);
 }

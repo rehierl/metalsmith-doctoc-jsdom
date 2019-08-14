@@ -61,7 +61,7 @@ msi
   filter: "**",
   //ignoreFlag: false,
   doctocFlag: "doctoc",
-  
+
   plugins: {
     jsdom: {
       plugin: plugin,
@@ -75,7 +75,7 @@ msi
       }
     }
   },
-  
+
   "default": "jsdom",
   //enableRequire: false,
   //resolveFunc: require,
@@ -97,9 +97,9 @@ msi
 //- run metalsmith's build process
 .build(function(error, files) {
   if(!error) { return false; }
-  
+
   //- may have error.innerError
   console.log("ERROR:", error);
-  
+
   //throw error;
 });

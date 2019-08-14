@@ -38,6 +38,6 @@ module.exports = function(files, metalsmith, done) {
 
     file.contents = new Buffer(contents);
   });
-  
+
   done();
 };
